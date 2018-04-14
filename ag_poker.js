@@ -25,10 +25,29 @@ function playDrawPoker() {
     pokerGame.currentBank = 500;
     pokerGame.currentBet = 25;
 
+    // Create a new deck of cards and shuffle it
+    var myDeck = new pokerDeck();
+    myDeck.shuffle();
+    console.log(myDeck);
+
+    // Create a pokerHand object
+    var myHand = new pokerHand(5);
+
     bankBox.value = pokerGame.currentBank;
     betSelection.onchange = function(e) {
         pokerGame.currentBet = parseInt(e.target.options[e.target.selectedIndex].value);
     };
+
+    // Restart the game when the Reset button is clicked
+    resetButton.addEventListener("click", function() {
+        pokerGame.currentBank = 500;
+        bankBox.value = pokerGame.currentBank;
+        enableObj(dealButton);
+        enableObj(betSelection);
+        disableObj(drawButton);
+        disableObj(standButton);
+    });
+
 
     // Enable the Draw and Stand buttons after the deal
     dealButton.addEventListener("click", function() {
@@ -38,10 +57,17 @@ function playDrawPoker() {
             enableObj(drawButton);
             enableObj(standButton);
             bankBox.value = pokerGame.placeBet();
+
+            //Deal cards into the poker hand after confirming //there are at least 10 cards in the deck
+            if (myDeck.cards.length < 10) {
+                myDeck = new pokerDeck();
+                myDeck.shuffle();
+            }
+            myDeck.dealTo(myHand);
+            console.log(myDeck, myHand);
         } else {
             alert("Reduce the size of your bet");
         }
-
     });
     // Enable the Deal and Bet options when the current hand ends
     drawButton.addEventListener("click", function() {
@@ -68,7 +94,21 @@ function playDrawPoker() {
         obj.disabled = false;
         obj.style.opacity = 1;
     }
-
-
-
 }
+
+
+
+// function pokerCard(cardSuit, cardRank) {
+//     this.suit = cardSuit;
+//     this.rank = cardRank;
+//     this.rankValue = null;
+//     this.showCard()
+//     function() {
+//         return "your card is a " + this.rank + " of " + this.suit;
+//     }
+
+
+//     var card1 = new pokerCard("Hearts", "King");
+//     card1.rankValue = 13;
+//     var card2 = new pokerCard("Spades", "7");
+//     card2.rankValue = 7;
