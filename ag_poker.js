@@ -20,6 +20,7 @@ function playDrawPoker() {
     var handValueText = document.getElementById("handValue");
     var betSelection = document.getElementById("bet");
     var bankBox = document.getElementById("bank");
+    var cardImages = document.querySelectorAll("img.cardImg");
 
     // Set the initial values of the pokerGame object
     pokerGame.currentBank = 500;
@@ -52,6 +53,7 @@ function playDrawPoker() {
     // Enable the Draw and Stand buttons after the deal
     dealButton.addEventListener("click", function() {
         if (pokerGame.currentBank >= pokerGame.currentBet) {
+            handValueText.textContent = "";
             disableObj(dealButton);
             disableObj(betSelection);
             enableObj(drawButton);
@@ -64,7 +66,24 @@ function playDrawPoker() {
                 myDeck.shuffle();
             }
             myDeck.dealTo(myHand);
-            console.log(myDeck, myHand);
+
+            // Display the card images on the table
+            for (var i = 0; i < cardImages.length; i++) {
+                cardImages[i].src = myHand.cards[i].cardImage();
+
+                // Event handler for each card image
+                cardImages[i].index = i;
+                cardImages[i].onclick = function(e) {
+                    if (e.target.discard !== true) {
+                        e.target.discard = true;
+                        e.target.src = "ag_cardback.png";
+                    } else {
+                        e.target.discard = false;
+                        e.target.src = myHand.cards[e.target.index].cardImage();
+                    }
+                };
+            }
+            // console.log(myDeck, myHand);
         } else {
             alert("Reduce the size of your bet");
         }
@@ -75,12 +94,34 @@ function playDrawPoker() {
         enableObj(betSelection);
         disableObj(drawButton);
         disableObj(standButton);
+
+        // Replace the cards selected for discarding
+        for (var i = 0; i < cardImages.length; i++) {
+            if (cardImages[i].discard) {
+                myHand.cards[i].replaceFromDeck(myDeck);
+                cardImages[i].src = myHand.cards[i].cardImage();
+                cardImages[i].discard = false;
+            }
+            cardImages[i].onclick = null;
+        }
+
+        // Evaluate the hand drawn by the user
+        handValueText.textContent = myHand.handType();
+
+        // Pay out for the final hand
+        bankBox.value = pokerGame.payout(myHand.handOdds());
     });
     standButton.addEventListener("click", function() {
         enableObj(dealButton);
         enableObj(betSelection);
         disableObj(drawButton);
         disableObj(standButton);
+
+        // Evaluate the hand drawn by the user
+        handValueText.textContent = myHand.handType();
+
+        // Pay out for the final hand
+        bankBox.value = pokerGame.payout(myHand.handOdds());
     });
 
 
@@ -95,20 +136,3 @@ function playDrawPoker() {
         obj.style.opacity = 1;
     }
 }
-
-
-
-// function pokerCard(cardSuit, cardRank) {
-//     this.suit = cardSuit;
-//     this.rank = cardRank;
-//     this.rankValue = null;
-//     this.showCard()
-//     function() {
-//         return "your card is a " + this.rank + " of " + this.suit;
-//     }
-
-
-//     var card1 = new pokerCard("Hearts", "King");
-//     card1.rankValue = 13;
-//     var card2 = new pokerCard("Spades", "7");
-//     card2.rankValue = 7;
